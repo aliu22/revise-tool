@@ -672,12 +672,12 @@ class YfccPlacesDataset(data.Dataset):
     def __init__(self, transform, metric=0):
         self.transform = transform
         
-        self.img_folder = 'Data/YFCC100m/data/images'
+        self.img_folder = '/n/fs/visualai-scr/Data/YFCC100m/data/images'
 
-        self.mapping = pickle.load(open('Data/YFCC100m/yfcc_mappings.pkl', 'rb')) #7.6GB
+        self.mapping = pickle.load(open('/n/fs/visualai-scr/Data/YFCC100m/yfcc_mappings.pkl', 'rb')) #7.6GB
         self.inv_mapping = {v: k for k, v in self.mapping.items()}
 
-        df = pandas.read_csv('Data/YFCC100m/placemeta_train.csv') #1.6GB
+        df = pandas.read_csv('/n/fs/visualai-scr/Data/YFCC100m/placemeta_train.csv') #1.6GB
         self.with_country = df.loc[df['type'] == 'Country']
         if os.path.exists('dataloader_files/yfcc_anns.pkl'): # 3.2GB
             info = pickle.load(open('dataloader_files/yfcc_anns.pkl', 'rb')) #shuffled
@@ -687,7 +687,7 @@ class YfccPlacesDataset(data.Dataset):
             self.all_ids = info['all']
         else:
             self.annotations = {} # image id: annotations
-            with open('Data/YFCC100m/tag-train', 'r') as f: #1.5 GB
+            with open('/n/fs/visualai-scr/Data/YFCC100m/tag-train', 'r') as f: #1.5 GB
                 content = f.readlines()
                 for entry in content:
                     pieces = entry.split()
@@ -700,7 +700,7 @@ class YfccPlacesDataset(data.Dataset):
             self.image_ids = [an_id for an_id in self.image_ids if (an_id in self.mapping.keys() and an_id in self.annotations.keys())]
             info['annotations'] = self.annotations
             info['image_ids'] = self.image_ids
-            info['alllang'] = list(pickle.load(open('Data/YFCC100m/tags/YFCC100M/alllang_ids.pkl', 'rb')).keys()) #147M
+            info['alllang'] = list(pickle.load(open('/n/fs/visualai-scr/Data/YFCC100m/tags/YFCC100M/alllang_ids.pkl', 'rb')).keys()) #147M
             random.shuffle(info['all'])
             random.shuffle(info['image_ids'])
             random.shuffle(info['alllang'])
@@ -711,7 +711,7 @@ class YfccPlacesDataset(data.Dataset):
             def __missing__(self, key):
                 return key
         self.labels_to_names = KeyDict()
-        with open('Data/YFCC100m/tags.txt', 'r') as f: # 66K
+        with open('/n/fs/visualai-scr/Data/YFCC100m/tags.txt', 'r') as f: # 66K
             content = f.readlines()
         self.categories = [x.strip() for x in content]
 
@@ -734,9 +734,11 @@ class YfccPlacesDataset(data.Dataset):
             raise Exception("Metric can't be run on this dataset")        
 
         if self.version == 'alllang':
+            print("subsetting first 512!")
+            self.alllang_ids = self.alllang_ids[:512]
             self.image_ids = self.alllang_ids
-            self.mapping_id_to_trainline = pickle.load(open('Data/YFCC100m/tags/YFCC100M/alllang_ids.pkl', 'rb'))
-            with open('Data/YFCC100m/tags/YFCC100M/train') as my_file: #19GB
+            self.mapping_id_to_trainline = pickle.load(open('/n/fs/visualai-scr/Data/YFCC100m/tags/YFCC100M/alllang_ids.pkl', 'rb'))
+            with open('/n/fs/visualai-scr/Data/YFCC100m/tags/YFCC100M/train') as my_file: #19GB
                 self.tags = my_file.readlines()
         elif self.version == 'intersect':
             pass
